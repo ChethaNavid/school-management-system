@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../../api";
+import { setToken } from "../../utils/auth";
+import { AuthContext } from "./context/AuthContext";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -9,9 +11,30 @@ export default function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setAuth } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     // implement your registration logic here
+    e.preventDefault();
+    try {
+      const response = await API.post("/auth/register", {
+        name: name,
+        email: email,
+        password: password
+      });
+
+      if(response?.data?.user && response?.data?.token) {
+        const { user, token } = response.data;
+
+        setToken(token);
+        setAuth(user);
+
+        navigate("/dashboard");
+      }
+    } catch(error) {
+      console.error(error);
+      setError("Invalid email or password.")
+    }
   };
 
   return (

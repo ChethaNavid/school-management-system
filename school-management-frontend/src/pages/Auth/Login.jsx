@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { setToken } from "../../utils/auth";
+import { isAuthenticated, setToken } from "../../utils/auth";
 import API from "../../api";
+import { AuthContext } from "./context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState(autoLoginData?.password || "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { setAuth } = useContext(AuthContext);
 
   useEffect(() => {
     if (autoLoginData?.email && autoLoginData?.password) {
@@ -21,6 +23,25 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     // implement your login logic here
+    e.preventDefault();
+    try {
+      const response = await API.post("/auth/login", {
+        email: email,
+        password: password,
+      });
+
+      if(response?.data?.user && response?.data?.token) {
+        const { user, token } = response.data;
+
+        setToken(token);
+        setAuth(user);
+
+        navigate("/dashboard")
+      }
+    } catch (error) {
+      console.error(error);
+      setError("Invalid email or password.");
+    }
   };
 
   return (
