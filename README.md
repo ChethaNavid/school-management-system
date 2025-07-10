@@ -1,1 +1,1 @@
-# school-management-systemcd
+# school-management-system
